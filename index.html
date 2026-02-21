@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valorant Map Ban</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Модальное окно входа -->
+        <div id="loginModal" class="modal">
+            <div class="modal-content">
+                <h2>Введите ваше имя</h2>
+                <input type="text" id="playerNameInput" placeholder="Ваше имя" maxlength="20">
+                <button id="joinButton" class="btn-primary">Присоединиться</button>
+            </div>
+        </div>
+
+        <!-- Основной интерфейс -->
+        <div id="mainContent" class="main-content hidden">
+            <!-- Боковая панель с участниками -->
+            <div class="sidebar">
+                <h2>Участники</h2>
+                <div id="playersList" class="players-list"></div>
+                <div id="captainsInfo" class="captains-info"></div>
+            </div>
+
+            <!-- Центральная область с картами -->
+            <div class="center-area">
+                <h1>Valorant Map Ban</h1>
+                <div id="statusMessage" class="status-message"></div>
+                <div id="mapsContainer" class="maps-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="client.js"></script>
+</body>
+</html>
+

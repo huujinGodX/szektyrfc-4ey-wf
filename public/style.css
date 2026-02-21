@@ -1,0 +1,510 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0f1923 0%, #1a2332 100%);
+    color: #fff;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.container {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Модальное окно входа */
+.modal {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: #1a2332;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    border: 2px solid #ff4655;
+    min-width: 300px;
+}
+
+.modal-content h2 {
+    margin-bottom: 20px;
+    color: #ff4655;
+    font-size: 24px;
+}
+
+.modal-content input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 2px solid #2a3441;
+    border-radius: 6px;
+    background: #0f1923;
+    color: #fff;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.modal-content input:focus {
+    border-color: #ff4655;
+}
+
+/* Основной контент */
+.main-content {
+    display: flex;
+    flex: 1;
+    min-height: 100vh;
+}
+
+.main-content.hidden {
+    display: none;
+}
+
+/* Боковая панель */
+.sidebar {
+    width: 300px;
+    background: #1a2332;
+    padding: 20px;
+    border-right: 2px solid #2a3441;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar h2 {
+    color: #ff4655;
+    margin-bottom: 20px;
+    font-size: 22px;
+    text-align: center;
+}
+
+.players-list {
+    flex: 1;
+    margin-bottom: 20px;
+}
+
+.player-item {
+    background: #0f1923;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    border: 2px solid #2a3441;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s;
+}
+
+.player-item:hover {
+    border-color: #ff4655;
+    transform: translateX(5px);
+}
+
+.player-item.captain {
+    border-color: #ffd700;
+    background: linear-gradient(135deg, #0f1923 0%, #1a1a0f 100%);
+}
+
+.player-name {
+    font-weight: 500;
+    color: #fff;
+}
+
+.player-name.captain {
+    color: #ffd700;
+}
+
+.btn-captain {
+    padding: 6px 12px;
+    background: #ff4655;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.3s;
+    font-weight: 600;
+}
+
+.btn-captain:hover {
+    background: #ff6b7a;
+    transform: scale(1.05);
+}
+
+.btn-captain:disabled {
+    background: #555;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.btn-leave-captain {
+    background: #2a3441 !important;
+    border: 1px solid #ffd700;
+    color: #ffd700;
+    font-size: 11px;
+}
+
+.btn-leave-captain:hover {
+    background: #3a4451 !important;
+}
+
+.captains-info {
+    background: #0f1923;
+    padding: 15px;
+    border-radius: 6px;
+    border: 2px solid #2a3441;
+    margin-bottom: 20px;
+}
+
+.captains-info h3 {
+    color: #ffd700;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.captain-name {
+    color: #ffd700;
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.btn-reset {
+    width: 100%;
+    padding: 12px;
+    background: #2a3441;
+    color: #fff;
+    border: 2px solid #ff4655;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-reset:hover {
+    background: #ff4655;
+    transform: scale(1.02);
+}
+
+.btn-play {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 16px;
+    background: #ff4655;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-play:hover {
+    background: #ff6b7a;
+    transform: scale(1.02);
+}
+
+.draft-info {
+    background: #0f1923;
+    padding: 12px;
+    border-radius: 6px;
+    border: 2px solid #2a3441;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: #ccc;
+}
+
+.draft-info.hidden,
+.phase-block.hidden {
+    display: none !important;
+}
+
+.phase-block {
+    width: 100%;
+    max-width: 1200px;
+}
+
+.lobby-text {
+    text-align: center;
+    color: #aaa;
+    font-size: 18px;
+    padding: 20px;
+}
+
+.draft-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 24px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.team-column,
+.pool-column {
+    background: #1a2332;
+    border: 2px solid #2a3441;
+    border-radius: 12px;
+    padding: 16px;
+    min-height: 200px;
+}
+
+.team-column h3,
+.pool-column h3 {
+    color: #ff4655;
+    margin-bottom: 12px;
+    font-size: 16px;
+    text-align: center;
+}
+
+.team-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.team-list .team-player {
+    padding: 10px 12px;
+    background: #0f1923;
+    border-radius: 6px;
+    border-left: 4px solid #ff4655;
+}
+
+.team-list .team-player.captain {
+    border-left-color: #ffd700;
+    color: #ffd700;
+}
+
+.pool-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 180px;
+}
+
+.pool-player {
+    padding: 10px 16px;
+    background: #0f1923;
+    border: 2px solid #2a3441;
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.pool-player:hover {
+    border-color: #ff4655;
+    background: #1a2332;
+}
+
+.pool-player.disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Центральная область */
+.center-area {
+    flex: 1;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.center-area h1 {
+    color: #ff4655;
+    margin-bottom: 30px;
+    font-size: 36px;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.status-message {
+    margin-bottom: 30px;
+    padding: 15px 30px;
+    background: #1a2332;
+    border-radius: 8px;
+    border: 2px solid #2a3441;
+    font-size: 18px;
+    text-align: center;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-message.winner {
+    border-color: #ffd700;
+    background: linear-gradient(135deg, #1a2332 0%, #2a2a1a 100%);
+    color: #ffd700;
+    font-weight: bold;
+    font-size: 24px;
+}
+
+.status-message.my-turn {
+    border-color: #ff4655;
+    background: rgba(255, 70, 85, 0.15);
+    color: #ff4655;
+    font-weight: 600;
+}
+
+/* Контейнер карт */
+.maps-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.map-card {
+    background-color: #1a2332;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    border: 3px solid #2a3441;
+    border-radius: 12px;
+    padding: 20px;
+    min-height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.map-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 70, 85, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.map-card:hover::before {
+    left: 100%;
+}
+
+.map-card:hover {
+    transform: translateY(-5px);
+    border-color: #ff4655;
+    box-shadow: 0 8px 24px rgba(255, 70, 85, 0.3);
+}
+
+.map-card.banned {
+    cursor: not-allowed;
+    border-color: #555;
+}
+
+.map-card.banned::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 9px;
+}
+
+.map-card.banned .map-name {
+    position: relative;
+    z-index: 1;
+    text-decoration: line-through;
+    color: #ff4655;
+    opacity: 1;
+}
+
+.map-card:not(.banned):not(.disabled) {
+    cursor: pointer;
+}
+
+.map-card.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.map-name {
+    font-size: 20px;
+    font-weight: 600;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+    position: relative;
+    z-index: 1;
+}
+
+/* Кнопки */
+.btn-primary {
+    padding: 12px 30px;
+    background: #ff4655;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    background: #ff6b7a;
+    transform: scale(1.05);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .main-content {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        max-height: 320px;
+    }
+
+    .draft-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .maps-container {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+    }
+
+    .center-area {
+        padding: 20px;
+    }
+
+    .center-area h1 {
+        font-size: 28px;
+    }
+}
+

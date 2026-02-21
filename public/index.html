@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Valorant — выбор карты</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Модальное окно имени (только при нажатии «Играю») -->
+        <div id="loginModal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Введите ваше имя</h2>
+                <input type="text" id="playerNameInput" placeholder="Ваше имя" maxlength="20">
+                <button id="joinButton" class="btn-primary">Играю</button>
+            </div>
+        </div>
+
+        <!-- Основной интерфейс (всегда виден) -->
+        <div id="mainContent" class="main-content">
+            <div class="sidebar">
+                <h2>Участники матча</h2>
+                <div id="playersList" class="players-list"></div>
+                <button id="playButton" class="btn-play">Играю</button>
+                <div id="captainsInfo" class="captains-info"></div>
+                <div id="draftInfo" class="draft-info hidden"></div>
+                <button id="resetButton" class="btn-reset">Сбросить</button>
+            </div>
+
+            <div class="center-area">
+                <h1>Valorant — выбор карты</h1>
+
+                <!-- Лобби / ожидание -->
+                <div id="lobbyMessage" class="phase-block">
+                    <p class="lobby-text">Нажмите «Играю» и введите имя. Когда наберётся 10 человек и выберутся 2 капитана — начнётся драфт команд.</p>
+                </div>
+
+                <!-- Драфт: две команды и пул -->
+                <div id="draftArea" class="phase-block hidden">
+                    <div id="draftStatus" class="status-message"></div>
+                    <div class="draft-grid">
+                        <div class="team-column">
+                            <h3>Команда 1</h3>
+                            <div id="team1List" class="team-list"></div>
+                        </div>
+                        <div class="pool-column">
+                            <h3>Выбор игрока</h3>
+                            <div id="poolList" class="pool-list"></div>
+                        </div>
+                        <div class="team-column">
+                            <h3>Команда 2</h3>
+                            <div id="team2List" class="team-list"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Выбор карт (только после драфта) -->
+                <div id="mapBanArea" class="phase-block hidden">
+                    <div id="statusMessage" class="status-message"></div>
+                    <div id="mapsContainer" class="maps-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>
+</body>
+</html>

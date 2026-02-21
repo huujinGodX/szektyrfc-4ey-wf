@@ -17,16 +17,28 @@
             </div>
         </div>
 
+        <!-- Настройки (смена никнейма) -->
+        <div id="settingsModal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Изменить никнейм</h2>
+                <input type="text" id="newNicknameInput" placeholder="Новый никнейм" maxlength="20">
+                <button id="saveNicknameButton" class="btn-primary">Сохранить</button>
+            </div>
+        </div>
+
         <!-- Основной интерфейс (скрыт до ввода имени) -->
         <div id="mainContent" class="main-content hidden">
+            <button id="settingsButton" class="btn-settings" title="Настройки">⚙</button>
             <div class="sidebar">
                 <h2>Участники матча</h2>
                 <div id="playersList" class="players-list"></div>
                 <button id="playButton" class="btn-play">Играю</button>
                 <button id="leaveButton" class="btn-leave hidden">Убраться из списка</button>
                 <div id="addOnBehalfBlock" class="add-on-behalf">
-                    <input type="text" id="onBehalfNameInput" placeholder="Имя участника" maxlength="20">
-                    <button id="addOnBehalfButton" class="btn-on-behalf">Добавить за другого</button>
+                    <div class="add-on-behalf-dropdown-wrap">
+                        <button id="addOnBehalfButton" class="btn-on-behalf">Добавить участника</button>
+                        <div id="onBehalfDropdown" class="dropdown hidden"></div>
+                    </div>
                 </div>
                 <div id="captainsInfo" class="captains-info"></div>
                 <div id="draftInfo" class="draft-info hidden"></div>

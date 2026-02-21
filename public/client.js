@@ -1,4 +1,5 @@
 const socket = io();
+const STORAGE_NICKNAME = 'valorant-nickname';
 
 let roomState = {
   phase: 'lobby',
@@ -32,22 +33,45 @@ const mapBanArea = document.getElementById('mapBanArea');
 const statusMessage = document.getElementById('statusMessage');
 const mapsContainer = document.getElementById('mapsContainer');
 const resetButton = document.getElementById('resetButton');
-const onBehalfNameInput = document.getElementById('onBehalfNameInput');
 const addOnBehalfButton = document.getElementById('addOnBehalfButton');
+const onBehalfDropdown = document.getElementById('onBehalfDropdown');
+const settingsButton = document.getElementById('settingsButton');
+const settingsModal = document.getElementById('settingsModal');
+const newNicknameInput = document.getElementById('newNicknameInput');
+const saveNicknameButton = document.getElementById('saveNicknameButton');
 
 function doJoin() {
   const name = playerNameInput.value.trim();
   if (name) {
     socket.emit('addUser', name);
+    try { localStorage.setItem(STORAGE_NICKNAME, name); } catch (_) {}
     loginModal.classList.add('hidden');
     mainContent.classList.remove('hidden');
   }
+}
+
+function tryAutoJoin() {
+  try {
+    const saved = localStorage.getItem(STORAGE_NICKNAME);
+    if (saved && (saved || '').trim()) {
+      const name = saved.trim();
+      socket.emit('addUser', name);
+      loginModal.classList.add('hidden');
+      mainContent.classList.remove('hidden');
+      return true;
+    }
+  } catch (_) {}
+  return false;
 }
 
 joinButton.addEventListener('click', doJoin);
 
 playerNameInput.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') doJoin();
+});
+
+socket.on('connect', () => {
+  tryAutoJoin();
 });
 
 // «Играю» — показать модалку ввода имени, если ещё не в списке (после того как убрались)
@@ -63,20 +87,71 @@ leaveButton.addEventListener('click', () => {
   socket.emit('removeUser');
 });
 
-if (addOnBehalfButton && onBehalfNameInput) {
-  addOnBehalfButton.addEventListener('click', () => {
-    const name = onBehalfNameInput.value.trim();
-    if (name) {
-      socket.emit('addUserOnBehalf', name);
-      onBehalfNameInput.value = '';
+if (addOnBehalfButton && onBehalfDropdown) {
+  addOnBehalfButton.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (onBehalfDropdown.classList.contains('hidden')) {
+      socket.emit('getRegisteredNicknames');
+    } else {
+      onBehalfDropdown.classList.add('hidden');
     }
   });
-  onBehalfNameInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') addOnBehalfButton.click();
+
+  socket.on('registeredNicknames', (nicknames) => {
+    onBehalfDropdown.innerHTML = '';
+    if (!nicknames || nicknames.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'dropdown-item disabled';
+      empty.textContent = 'Нет доступных участников';
+      onBehalfDropdown.appendChild(empty);
+    } else {
+      nicknames.forEach(name => {
+        const item = document.createElement('div');
+        item.className = 'dropdown-item';
+        item.textContent = name;
+        item.addEventListener('click', () => {
+          socket.emit('addUserOnBehalf', name);
+          onBehalfDropdown.classList.add('hidden');
+        });
+        onBehalfDropdown.appendChild(item);
+      });
+    }
+    onBehalfDropdown.classList.remove('hidden');
   });
+
+  document.addEventListener('click', () => {
+    onBehalfDropdown.classList.add('hidden');
+  });
+  onBehalfDropdown.addEventListener('click', (e) => e.stopPropagation());
 }
 
 if (resetButton) resetButton.addEventListener('click', () => socket.emit('reset'));
+
+if (settingsButton) {
+  settingsButton.addEventListener('click', () => {
+    const me = roomState.users.find(u => u.id === socket.id);
+    if (me) {
+      newNicknameInput.value = me.name || '';
+      settingsModal.classList.remove('hidden');
+    }
+  });
+}
+if (settingsModal && newNicknameInput && saveNicknameButton) {
+  saveNicknameButton.addEventListener('click', () => {
+    const name = newNicknameInput.value.trim();
+    if (name) {
+      socket.emit('updateNickname', name);
+      try { localStorage.setItem(STORAGE_NICKNAME, name); } catch (_) {}
+      settingsModal.classList.add('hidden');
+    }
+  });
+  newNicknameInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') saveNicknameButton.click();
+  });
+  settingsModal.addEventListener('click', (e) => {
+    if (e.target === settingsModal) settingsModal.classList.add('hidden');
+  });
+}
 
 socket.on('state', (state) => {
   roomState = state;
@@ -94,6 +169,7 @@ function updateUI() {
   if (addOnBehalfBlock) addOnBehalfBlock.classList.toggle('hidden', phase !== 'lobby');
 
   updatePlayButton();
+  updateSettingsButton();
   updatePlayersList();
   updateCaptainsInfo();
 
@@ -114,6 +190,13 @@ function updatePlayButton() {
   playButton.classList.toggle('hidden', inList);
   if (leaveButton) {
     leaveButton.classList.toggle('hidden', !inList || roomState.phase !== 'lobby');
+  }
+}
+
+function updateSettingsButton() {
+  const inList = roomState.users.some(u => u.id === socket.id);
+  if (settingsButton) {
+    settingsButton.classList.toggle('hidden', !inList);
   }
 }
 

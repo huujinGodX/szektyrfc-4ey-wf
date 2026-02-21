@@ -75,10 +75,39 @@ body {
     display: flex;
     flex: 1;
     min-height: 100vh;
+    position: relative;
 }
 
 .main-content.hidden {
     display: none;
+}
+
+.btn-settings {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid #3a4555;
+    background: #2a3441;
+    color: #ccc;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    transition: all 0.2s;
+}
+
+.btn-settings:hover {
+    background: #3a4555;
+    color: #fff;
+}
+
+.btn-settings.hidden {
+    display: none !important;
 }
 
 /* Боковая панель */
@@ -253,9 +282,6 @@ body {
 }
 
 .add-on-behalf {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
     margin-bottom: 16px;
 }
 
@@ -263,21 +289,48 @@ body {
     display: none !important;
 }
 
-.add-on-behalf input {
-    padding: 10px 12px;
-    border: 2px solid #2a3441;
-    border-radius: 6px;
-    background: #0f1923;
-    color: #fff;
-    font-size: 14px;
-    outline: none;
+.add-on-behalf-dropdown-wrap {
+    position: relative;
 }
 
-.add-on-behalf input:focus {
-    border-color: #ff4655;
+.dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #1a2332;
+    border: 2px solid #2a3441;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    z-index: 200;
+}
+
+.dropdown.hidden {
+    display: none !important;
+}
+
+.dropdown-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #fff;
+    transition: background 0.2s;
+}
+
+.dropdown-item:hover:not(.disabled) {
+    background: #2a3441;
+}
+
+.dropdown-item.disabled {
+    color: #888;
+    cursor: default;
 }
 
 .btn-on-behalf {
+    width: 100%;
     padding: 10px 14px;
     background: #2a3441;
     color: #ccc;

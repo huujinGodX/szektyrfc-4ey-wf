@@ -2,6 +2,7 @@ const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
 const path = require('path');
+const fs = require('fs');
 const os = require('os');
 
 const app = express();
@@ -9,6 +10,41 @@ const server = http.createServer(app);
 const io = socketIo(server);
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+// База никнеймов (сохраняется в data/nicknames.json)
+const NICKNAMES_PATH = path.join(__dirname, 'data', 'nicknames.json');
+
+function loadNicknames() {
+  try {
+    const data = fs.readFileSync(NICKNAMES_PATH, 'utf8');
+    const arr = JSON.parse(data);
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveNicknames(nicknames) {
+  try {
+    const dir = path.dirname(NICKNAMES_PATH);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(NICKNAMES_PATH, JSON.stringify(nicknames, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Ошибка сохранения никнеймов:', err.message);
+  }
+}
+
+let registeredNicknames = loadNicknames();
+
+function registerNickname(name) {
+  const n = (name || '').trim();
+  if (!n) return;
+  const lower = n.toLowerCase();
+  if (!registeredNicknames.some(x => x.toLowerCase() === lower)) {
+    registeredNicknames.push(n);
+    saveNicknames(registeredNicknames);
+  }
+}
 
 const MAP_NAMES = [
   'abyss', 'ascent', 'bind', 'breeze', 'corrode', 'fracture',
@@ -105,6 +141,7 @@ io.on('connection', (socket) => {
         });
       }
     }
+    registerNickname(name);
     tryStartDraft();
     io.emit('state', roomState);
   });
@@ -126,7 +163,24 @@ io.on('connection', (socket) => {
       name,
       isCaptain: false
     });
+    registerNickname(name);
     tryStartDraft();
+    io.emit('state', roomState);
+  });
+
+  socket.on('getRegisteredNicknames', () => {
+    const inRoom = new Set(roomState.users.map(u => (u.name || '').toLowerCase()));
+    const available = registeredNicknames.filter(n => !inRoom.has((n || '').toLowerCase()));
+    socket.emit('registeredNicknames', available);
+  });
+
+  socket.on('updateNickname', (newName) => {
+    const name = (newName || '').trim();
+    if (!name) return;
+    const user = roomState.users.find(u => u.id === socket.id);
+    if (!user) return;
+    user.name = name;
+    registerNickname(name);
     io.emit('state', roomState);
   });
 

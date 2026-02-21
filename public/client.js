@@ -74,10 +74,17 @@ socket.on('connect', () => {
   tryAutoJoin();
 });
 
-// «Играю» — показать модалку ввода имени, если ещё не в списке (после того как убрались)
+// «Играю» — войти сразу, если сохранён никнейм, иначе показать модалку
 playButton.addEventListener('click', () => {
   const inList = roomState.users.some(u => u.id === socket.id);
   if (!inList) {
+    try {
+      const saved = localStorage.getItem(STORAGE_NICKNAME);
+      if (saved && saved.trim()) {
+        socket.emit('addUser', saved.trim());
+        return;
+      }
+    } catch (_) {}
     playerNameInput.value = '';
     loginModal.classList.remove('hidden');
   }

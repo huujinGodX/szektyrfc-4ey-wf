@@ -13,6 +13,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // База никнеймов (сохраняется в data/nicknames.json)
 const NICKNAMES_PATH = path.join(__dirname, 'data', 'nicknames.json');
+const MIGRATION_PATH = path.join(__dirname, 'data', 'migration-nicknames.json');
 
 function loadNicknames() {
   try {
@@ -35,6 +36,30 @@ function saveNicknames(nicknames) {
 }
 
 let registeredNicknames = loadNicknames();
+
+// При старте: загрузить никнеймы из миграции (записаны предыдущим процессом при остановке)
+try {
+  if (fs.existsSync(MIGRATION_PATH)) {
+    const data = fs.readFileSync(MIGRATION_PATH, 'utf8');
+    const arr = JSON.parse(data);
+    if (Array.isArray(arr) && arr.length > 0) {
+      arr.forEach(n => {
+        const name = (n || '').trim();
+        if (name) {
+          const lower = name.toLowerCase();
+          if (!registeredNicknames.some(x => x.toLowerCase() === lower)) {
+            registeredNicknames.push(name);
+          }
+        }
+      });
+      saveNicknames(registeredNicknames);
+      fs.unlinkSync(MIGRATION_PATH);
+      console.log('📋 Миграция: добавлено', arr.length, 'никнеймов из предыдущей сессии');
+    }
+  }
+} catch (e) {
+  console.error('Ошибка миграции никнеймов:', e.message);
+}
 
 function registerNickname(name) {
   const n = (name || '').trim();
@@ -319,6 +344,25 @@ function getLocalIP() {
 
 const PORT = process.env.PORT || 3000;
 const localIP = getLocalIP();
+
+// Сохранить никнеймы текущих участников для миграции при следующем рестарте
+function saveCurrentUsersForMigration() {
+  try {
+    const nicknames = roomState.users.map(u => (u.name || '').trim()).filter(Boolean);
+    if (nicknames.length === 0) return;
+    const dir = path.dirname(MIGRATION_PATH);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(MIGRATION_PATH, JSON.stringify(nicknames, null, 2), 'utf8');
+  } catch (e) {
+    console.error('Ошибка сохранения миграции:', e.message);
+  }
+}
+
+// Периодически сохранять текущих участников (каждую минуту)
+setInterval(saveCurrentUsersForMigration, 60000);
+
+process.on('SIGTERM', () => { saveCurrentUsersForMigration(); process.exit(0); });
+process.on('SIGINT', () => { saveCurrentUsersForMigration(); process.exit(0); });
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log('\n========================================');

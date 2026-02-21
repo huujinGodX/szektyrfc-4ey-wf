@@ -46,6 +46,17 @@ function registerNickname(name) {
   }
 }
 
+function unregisterNickname(name) {
+  const n = (name || '').trim();
+  if (!n) return;
+  const lower = n.toLowerCase();
+  const idx = registeredNicknames.findIndex(x => x.toLowerCase() === lower);
+  if (idx >= 0) {
+    registeredNicknames.splice(idx, 1);
+    saveNicknames(registeredNicknames);
+  }
+}
+
 const MAP_NAMES = [
   'abyss', 'ascent', 'bind', 'breeze', 'corrode', 'fracture',
   'haven', 'icebox', 'lotus', 'pearl', 'split', 'sunset'
@@ -179,7 +190,9 @@ io.on('connection', (socket) => {
     if (!name) return;
     const user = roomState.users.find(u => u.id === socket.id);
     if (!user) return;
+    const oldName = user.name;
     user.name = name;
+    unregisterNickname(oldName);
     registerNickname(name);
     io.emit('state', roomState);
   });
@@ -191,6 +204,7 @@ io.on('connection', (socket) => {
 
     user.isCaptain = true;
     roomState.captains.push(user.id);
+    roomState.captains = roomState.captains.slice(0, 2);
     tryStartDraft();
     io.emit('state', roomState);
   });

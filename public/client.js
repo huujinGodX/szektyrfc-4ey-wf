@@ -18,6 +18,7 @@ const mainContent = document.getElementById('mainContent');
 const playerNameInput = document.getElementById('playerNameInput');
 const joinButton = document.getElementById('joinButton');
 const playButton = document.getElementById('playButton');
+const leaveButton = document.getElementById('leaveButton');
 const playersList = document.getElementById('playersList');
 const captainsInfo = document.getElementById('captainsInfo');
 const draftInfo = document.getElementById('draftInfo');
@@ -34,7 +35,22 @@ const resetButton = document.getElementById('resetButton');
 const onBehalfNameInput = document.getElementById('onBehalfNameInput');
 const addOnBehalfButton = document.getElementById('addOnBehalfButton');
 
-// «Играю» — показать модалку ввода имени, если ещё не в списке
+function doJoin() {
+  const name = playerNameInput.value.trim();
+  if (name) {
+    socket.emit('addUser', name);
+    loginModal.classList.add('hidden');
+    mainContent.classList.remove('hidden');
+  }
+}
+
+joinButton.addEventListener('click', doJoin);
+
+playerNameInput.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') doJoin();
+});
+
+// «Играю» — показать модалку ввода имени, если ещё не в списке (после того как убрались)
 playButton.addEventListener('click', () => {
   const inList = roomState.users.some(u => u.id === socket.id);
   if (!inList) {
@@ -43,16 +59,8 @@ playButton.addEventListener('click', () => {
   }
 });
 
-joinButton.addEventListener('click', () => {
-  const name = playerNameInput.value.trim();
-  if (name) {
-    socket.emit('addUser', name);
-    loginModal.classList.add('hidden');
-  }
-});
-
-playerNameInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') joinButton.click();
+leaveButton.addEventListener('click', () => {
+  socket.emit('removeUser');
 });
 
 if (addOnBehalfButton && onBehalfNameInput) {
@@ -103,6 +111,10 @@ function updatePlayButton() {
   const inList = roomState.users.some(u => u.id === socket.id);
   playButton.textContent = inList ? 'Вы в списке' : 'Играю';
   playButton.disabled = inList;
+  playButton.classList.toggle('hidden', inList);
+  if (leaveButton) {
+    leaveButton.classList.toggle('hidden', !inList || roomState.phase !== 'lobby');
+  }
 }
 
 function updatePlayersList() {

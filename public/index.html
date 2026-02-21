@@ -8,21 +8,22 @@
 </head>
 <body>
     <div class="container">
-        <!-- Модальное окно имени (только при нажатии «Играю») -->
-        <div id="loginModal" class="modal hidden">
+        <!-- Модальное окно имени (показывается сразу при входе) -->
+        <div id="loginModal" class="modal">
             <div class="modal-content">
-                <h2>Введите ваше имя</h2>
-                <input type="text" id="playerNameInput" placeholder="Ваше имя" maxlength="20">
-                <button id="joinButton" class="btn-primary">Играю</button>
+                <h2>Введите ваш никнейм</h2>
+                <input type="text" id="playerNameInput" placeholder="Ваш никнейм" maxlength="20">
+                <button id="joinButton" class="btn-primary">Войти</button>
             </div>
         </div>
 
-        <!-- Основной интерфейс (всегда виден) -->
-        <div id="mainContent" class="main-content">
+        <!-- Основной интерфейс (скрыт до ввода имени) -->
+        <div id="mainContent" class="main-content hidden">
             <div class="sidebar">
                 <h2>Участники матча</h2>
                 <div id="playersList" class="players-list"></div>
                 <button id="playButton" class="btn-play">Играю</button>
+                <button id="leaveButton" class="btn-leave hidden">Убраться из списка</button>
                 <div id="addOnBehalfBlock" class="add-on-behalf">
                     <input type="text" id="onBehalfNameInput" placeholder="Имя участника" maxlength="20">
                     <button id="addOnBehalfButton" class="btn-on-behalf">Добавить за другого</button>
@@ -37,7 +38,7 @@
 
                 <!-- Лобби / ожидание -->
                 <div id="lobbyMessage" class="phase-block">
-                    <p class="lobby-text">Нажмите «Играю» и введите имя. Когда наберётся 10 человек и выберутся 2 капитана — начнётся драфт команд.</p>
+                    <p class="lobby-text">Введите никнейм при входе. Если имя уже в списке — вы станете этим участником. Когда наберётся 10 человек и выберутся 2 капитана — начнётся драфт команд.</p>
                 </div>
 
                 <!-- Драфт: две команды и пул -->

@@ -226,6 +226,32 @@ body {
     transform: scale(1.02);
 }
 
+.btn-play.hidden {
+    display: none !important;
+}
+
+.btn-leave {
+    width: 100%;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    background: #2a3441;
+    color: #ccc;
+    border: 1px solid #3a4555;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.btn-leave:hover {
+    background: #3a4555;
+    color: #fff;
+}
+
+.btn-leave.hidden {
+    display: none !important;
+}
+
 .add-on-behalf {
     display: flex;
     flex-direction: column;

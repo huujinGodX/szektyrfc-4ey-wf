@@ -78,17 +78,41 @@ io.on('connection', (socket) => {
     const name = (userName || '').trim();
     if (!name) return;
 
-    const existingIndex = roomState.users.findIndex(u => u.id === socket.id);
-    if (existingIndex !== -1) {
-      roomState.users[existingIndex].name = name;
+    const n = name.toLowerCase();
+    const existingByName = roomState.users.find(u => (u.name || '').toLowerCase() === n);
+    if (existingByName) {
+      // Имя уже есть — текущий сокет «становится» этим участником
+      const oldId = existingByName.id;
+      existingByName.id = socket.id;
+      if (roomState.captains.includes(oldId)) {
+        roomState.captains = roomState.captains.map(id => id === oldId ? socket.id : id);
+      }
+      roomState.teams[1] = roomState.teams[1].map(id => id === oldId ? socket.id : id);
+      roomState.teams[2] = roomState.teams[2].map(id => id === oldId ? socket.id : id);
+      roomState.draftOrder = roomState.draftOrder.map(id => id === oldId ? socket.id : id);
+      if (roomState.currentDraftPickerId === oldId) roomState.currentDraftPickerId = socket.id;
+      roomState.mapBanOrder = roomState.mapBanOrder.map(id => id === oldId ? socket.id : id);
+      if (roomState.currentMapBanTurnId === oldId) roomState.currentMapBanTurnId = socket.id;
     } else {
-      roomState.users.push({
-        id: socket.id,
-        name,
-        isCaptain: false
-      });
+      const existingBySocket = roomState.users.findIndex(u => u.id === socket.id);
+      if (existingBySocket !== -1) {
+        roomState.users[existingBySocket].name = name;
+      } else {
+        roomState.users.push({
+          id: socket.id,
+          name,
+          isCaptain: false
+        });
+      }
     }
     tryStartDraft();
+    io.emit('state', roomState);
+  });
+
+  socket.on('removeUser', () => {
+    if (roomState.phase !== 'lobby') return;
+    roomState.users = roomState.users.filter(u => u.id !== socket.id);
+    roomState.captains = roomState.captains.filter(id => id !== socket.id);
     io.emit('state', roomState);
   });
 

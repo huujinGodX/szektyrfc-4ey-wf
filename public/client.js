@@ -8,6 +8,7 @@ let roomState = {
   teams: { 1: [], 2: [] },
   draftOrder: [],
   currentDraftPickerId: null,
+  extraPicksRemaining: 0,
   mapBanOrder: [],
   currentMapBanTurnId: null
 };
@@ -30,6 +31,8 @@ const mapBanArea = document.getElementById('mapBanArea');
 const statusMessage = document.getElementById('statusMessage');
 const mapsContainer = document.getElementById('mapsContainer');
 const resetButton = document.getElementById('resetButton');
+const onBehalfNameInput = document.getElementById('onBehalfNameInput');
+const addOnBehalfButton = document.getElementById('addOnBehalfButton');
 
 // «Играю» — показать модалку ввода имени, если ещё не в списке
 playButton.addEventListener('click', () => {
@@ -52,6 +55,19 @@ playerNameInput.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') joinButton.click();
 });
 
+if (addOnBehalfButton && onBehalfNameInput) {
+  addOnBehalfButton.addEventListener('click', () => {
+    const name = onBehalfNameInput.value.trim();
+    if (name) {
+      socket.emit('addUserOnBehalf', name);
+      onBehalfNameInput.value = '';
+    }
+  });
+  onBehalfNameInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') addOnBehalfButton.click();
+  });
+}
+
 if (resetButton) resetButton.addEventListener('click', () => socket.emit('reset'));
 
 socket.on('state', (state) => {
@@ -65,6 +81,9 @@ function updateUI() {
   lobbyMessage.classList.toggle('hidden', phase !== 'lobby');
   draftArea.classList.toggle('hidden', phase !== 'draft');
   mapBanArea.classList.toggle('hidden', phase !== 'mapBan');
+
+  const addOnBehalfBlock = document.getElementById('addOnBehalfBlock');
+  if (addOnBehalfBlock) addOnBehalfBlock.classList.toggle('hidden', phase !== 'lobby');
 
   updatePlayButton();
   updatePlayersList();
@@ -149,9 +168,10 @@ function updateDraft() {
   const pool = getPool();
   const currentPicker = roomState.currentDraftPickerId ? getUser(roomState.currentDraftPickerId) : null;
   const isMyTurn = roomState.currentDraftPickerId === socket.id;
+  const extraPicks = (roomState.extraPicksRemaining || 0) > 0 ? ` (${roomState.extraPicksRemaining} выбор(а) подряд)` : '';
 
   draftStatus.textContent = currentPicker
-    ? (isMyTurn ? 'Ваш ход — выберите игрока в команду' : `Выбирает: ${currentPicker.name}`)
+    ? (isMyTurn ? 'Ваш ход — выберите игрока в команду' + extraPicks : `Выбирает: ${currentPicker.name}` + extraPicks)
     : 'Драфт завершён';
   draftStatus.className = 'status-message' + (isMyTurn ? ' my-turn' : '');
 

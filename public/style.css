@@ -226,6 +226,47 @@ body {
     transform: scale(1.02);
 }
 
+.add-on-behalf {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.add-on-behalf.hidden {
+    display: none !important;
+}
+
+.add-on-behalf input {
+    padding: 10px 12px;
+    border: 2px solid #2a3441;
+    border-radius: 6px;
+    background: #0f1923;
+    color: #fff;
+    font-size: 14px;
+    outline: none;
+}
+
+.add-on-behalf input:focus {
+    border-color: #ff4655;
+}
+
+.btn-on-behalf {
+    padding: 10px 14px;
+    background: #2a3441;
+    color: #ccc;
+    border: 1px solid #3a4555;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.btn-on-behalf:hover {
+    background: #3a4555;
+    color: #fff;
+}
+
 .draft-info {
     background: #0f1923;
     padding: 12px;

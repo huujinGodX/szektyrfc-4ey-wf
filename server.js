@@ -37,6 +37,7 @@ let roomState = {
   teams: { 1: [], 2: [] },
   draftOrder: [],       // [firstPickerId, secondPickerId]
   currentDraftPickerId: null,
+  extraPicksRemaining: 0, // после выбора asura — другой капитан берёт 2 подряд
   // mapBan
   mapBanOrder: [],      // [firstBanId, secondBanId] — первым банит тот, кто выбирал вторым в драфте
   currentMapBanTurnId: null
@@ -91,6 +92,20 @@ io.on('connection', (socket) => {
     io.emit('state', roomState);
   });
 
+  // Добавить участника за другого человека (оффлайн / от имени другого)
+  socket.on('addUserOnBehalf', (userName) => {
+    const name = (userName || '').trim();
+    if (!name) return;
+    const syntheticId = 'offline-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9);
+    roomState.users.push({
+      id: syntheticId,
+      name,
+      isCaptain: false
+    });
+    tryStartDraft();
+    io.emit('state', roomState);
+  });
+
   socket.on('becomeCaptain', () => {
     if (roomState.phase !== 'lobby') return;
     const user = roomState.users.find(u => u.id === socket.id);
@@ -117,16 +132,30 @@ io.on('connection', (socket) => {
     if (roomState.currentDraftPickerId !== socket.id) return;
 
     const pool = getPool();
-    if (!pool.some(u => u.id === pickedUserId)) return;
+    const pickedUser = pool.find(u => u.id === pickedUserId);
+    if (!pickedUser) return;
 
     const captainTeam = roomState.teams[1].includes(socket.id) ? 1 : 2;
     roomState.teams[captainTeam].push(pickedUserId);
 
-    tryStartMapBan();
-    if (roomState.phase === 'draft') {
-      roomState.currentDraftPickerId = roomState.draftOrder[0] === socket.id
-        ? roomState.draftOrder[1]
-        : roomState.draftOrder[0];
+    // Правило для asura: тот, кто взял asura, отдаёт ход другому капитану на 2 выбора подряд
+    const isAsura = (pickedUser.name || '').toLowerCase().trim() === 'asura';
+    const otherCaptainId = roomState.draftOrder[0] === socket.id ? roomState.draftOrder[1] : roomState.draftOrder[0];
+    if (isAsura) {
+      roomState.currentDraftPickerId = otherCaptainId;
+      roomState.extraPicksRemaining = 2;
+    } else {
+      tryStartMapBan();
+      if (roomState.phase === 'draft') {
+        if (roomState.extraPicksRemaining > 0) {
+          roomState.extraPicksRemaining--;
+          if (roomState.extraPicksRemaining === 0) {
+            roomState.currentDraftPickerId = roomState.draftOrder[0] === socket.id ? roomState.draftOrder[1] : roomState.draftOrder[0];
+          }
+        } else {
+          roomState.currentDraftPickerId = roomState.draftOrder[0] === socket.id ? roomState.draftOrder[1] : roomState.draftOrder[0];
+        }
+      }
     }
     io.emit('state', roomState);
   });
@@ -157,24 +186,25 @@ io.on('connection', (socket) => {
     roomState.teams = { 1: [], 2: [] };
     roomState.draftOrder = [];
     roomState.currentDraftPickerId = null;
+    roomState.extraPicksRemaining = 0;
     roomState.mapBanOrder = [];
     roomState.currentMapBanTurnId = null;
     io.emit('state', roomState);
   });
 
   socket.on('disconnect', () => {
-    roomState.users = roomState.users.filter(u => u.id !== socket.id);
+    // Участника не удаляем из списка при закрытии вкладки — он остаётся в лобби
     roomState.captains = roomState.captains.filter(id => id !== socket.id);
     if (roomState.phase === 'draft' || roomState.phase === 'mapBan') {
       roomState.teams[1] = roomState.teams[1].filter(id => id !== socket.id);
       roomState.teams[2] = roomState.teams[2].filter(id => id !== socket.id);
       const stillHaveTwoCaptains = roomState.captains.length === 2;
-      const teamsValid = roomState.teams[1].length <= 5 && roomState.teams[2].length <= 5;
       if (!stillHaveTwoCaptains || roomState.users.length < 10) {
         roomState.phase = 'lobby';
         roomState.teams = { 1: [], 2: [] };
         roomState.draftOrder = [];
         roomState.currentDraftPickerId = null;
+        roomState.extraPicksRemaining = 0;
         roomState.mapBanOrder = [];
         roomState.currentMapBanTurnId = null;
         roomState.maps = createInitialMaps();
